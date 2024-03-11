@@ -28,6 +28,9 @@ devDependencies:
   nodemon:
     specifier: ^3.1.0
     version: 3.1.0
+  prettier:
+    specifier: ^3.2.5
+    version: 3.2.5
   ts-node:
     specifier: ^10.9.2
     version: 10.9.2(@types/node@20.11.25)(typescript@5.4.2)
@@ -1619,6 +1622,12 @@ packages:
   /prettier@2.8.8:
     resolution: {integrity: sha512-tdN8qQGvNjw4CHbY+XXk0JgCXn9QiF21a55rBe5LJAU+kDyC4WQn4+awm2Xfk2lQMk5fKup9XgzTZtGkjBdP9Q==}
     engines: {node: '>=10.13.0'}
+    hasBin: true
+    dev: true
+
+  /prettier@3.2.5:
+    resolution: {integrity: sha512-3/GWa9aOC0YeD7LUfvOG2NiDyhOWRvt1k+rcKhOuYnMY24iiCphgneUfJDyFXd6rZCAnuLBv6UeAULtrhT/F4A==}
+    engines: {node: '>=14'}
     hasBin: true
     dev: true
 

@@ -1,0 +1,10 @@
+.env
+.env.local
+.env.*
+*.env
+
+./dist
+
+/node_modules
+
+pnpm-lock.yaml
