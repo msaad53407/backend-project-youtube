@@ -1,0 +1,1 @@
+export const jsonLimit = '16kb';
