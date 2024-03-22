@@ -1,12 +1,11 @@
 import dotenv from "dotenv";
-import express from "express";
 import { connectDB } from "./db";
+import { app } from "./app";
 
 dotenv.config({ path: './.env.local' })
 
 const PORT = process.env.PORT || 3001;
 
-const app = express();
 connectDB().then(() => {
   app.on("error", (error) => {
     console.log("Server could not connect to MongoDB !! ", error);
@@ -21,6 +20,3 @@ connectDB().then(() => {
   throw error;
 });
 
-app.get('/',
-  (req, res) => res.send('Hello World')
-);
