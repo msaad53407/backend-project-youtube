@@ -6,30 +6,39 @@ import { User } from "../models/user.model";
 import { UserDocument } from "../interfaces/mongoose.gen";
 
 export interface ExtendedRequest extends Request {
-    user: UserDocument;
+  user: UserDocument;
 }
 
-export const verifyJWT = asyncHandler(async (req: ExtendedRequest, _: any, next: NextFunction) => {
+export const verifyJWT = asyncHandler(
+  async (req: ExtendedRequest, _: any, next: NextFunction) => {
     try {
-        const accessToken = req.cookies?.accessToken || req.header('Authorization')?.replace('Bearer ', "")
+      const accessToken =
+        req.cookies?.accessToken ||
+        req.header("Authorization")?.replace("Bearer ", "");
 
-        if (!accessToken) {
-            throw new ApiError(401, "Unauthorized Request");
-        }
-        const userInfoFromToken: any = jwt.verify(accessToken, process.env.ACCESS_TOKEN_SECRET!)
+      if (!accessToken) {
+        throw new ApiError(401, "Unauthorized Request");
+      }
+      const userInfoFromToken: any = jwt.verify(
+        accessToken,
+        process.env.ACCESS_TOKEN_SECRET!
+      );
 
-        const user = await User.findById(userInfoFromToken?._id).select("-password -refreshToken");
+      const user = await User.findById(userInfoFromToken?._id).select(
+        "-password -refreshToken"
+      );
 
-        if (!user) {
-            throw new ApiError(401, "Invalid Access Token");
-        }
+      if (!user) {
+        throw new ApiError(401, "Invalid Access Token");
+      }
 
-        req.user = user;
+      req.user = user;
     } catch (error: unknown) {
-        const message = (error instanceof Error) ? error.message : "Invalid Access Token";
-        throw new ApiError(401, message);
+      const message =
+        error instanceof Error ? error.message : "Invalid Access Token";
+      throw new ApiError(401, message);
     }
 
     next();
-
-})
+  }
+);
