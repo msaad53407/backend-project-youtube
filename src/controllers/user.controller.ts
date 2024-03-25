@@ -5,6 +5,8 @@ import { User } from "../models/user.model";
 import { MulterFiles } from "../middlewares/multer.middleware";
 import { uploadFile } from "../lib/cloudinary";
 import ApiResponse from "../utils/ApiResponse";
+import { UserDocument } from "../interfaces/mongoose.gen";
+import { ExtendedRequest } from "../middlewares/auth.middleware";
 
 const registerHandler = asyncHandler(async (req: Request, res: Response) => {
   // Step 1: Get details from the body of the request.
@@ -20,11 +22,10 @@ const registerHandler = asyncHandler(async (req: Request, res: Response) => {
 
   //Step1
   const { fullName, username, email, password } = req.body;
-
   //Step2
   if (
     [fullName, username, email, password].every(
-      field => field !== undefined && field?.trim() !== ""
+      field => field === undefined || field.trim() === ""
     )
   ) {
     throw new ApiError(400, "Please provide all required fields");
@@ -41,16 +42,19 @@ const registerHandler = asyncHandler(async (req: Request, res: Response) => {
 
   //Step4
   const avatarLocalPath = (req.files as MulterFiles)?.avatar[0]?.path;
-  const coverImageLocalPath = (req.files as MulterFiles)?.coverImage[0]?.path;
+  let coverImageLocalPath: string | null = null;
+
+  if (req.files && 'coverImage' in req.files) {
+    coverImageLocalPath = ((req.files as MulterFiles).coverImage[0]?.path) || null;
+  }
 
   if (!avatarLocalPath) {
     throw new ApiError(400, "Avatar is required.");
   }
 
   //Step5
-
   const avatarUrl = await uploadFile(avatarLocalPath);
-  const coverImageUrl = await uploadFile(coverImageLocalPath);
+  const coverImageUrl = coverImageLocalPath ? await uploadFile(coverImageLocalPath) : null;
 
 
   //Step6
@@ -81,6 +85,124 @@ const registerHandler = asyncHandler(async (req: Request, res: Response) => {
   return res.status(201).json(new ApiResponse(201, responseUser, "User created successfully."));
 
 
+
 });
 
-export { registerHandler };
+const generateAccessAndRefreshToken = async (user: UserDocument) => {
+  try {
+    const accessToken: string = user.generateAccessToken();
+    const refreshToken: string = user.generateRefreshToken();
+
+    user.refreshToken = refreshToken;
+    await user.save({
+      validateBeforeSave: false, // So that fields are not validated when saved and all changes are directly saved to the db.
+    })
+
+    return {
+      accessToken,
+      refreshToken,
+    }
+  } catch (error) {
+    throw new ApiError(500, 'Some Error Occurred while generating Access and Refresh Tokens.')
+  }
+}
+
+const loginUser = asyncHandler(async (req: Request, res: Response) => {
+  //Step1 -> Get credentials from user to login.
+  //Step2 -> Validate if the given credentials are in correct format.
+  //Step3 -> Check if user exists in db according to provided credentials.
+  //Step4 -> If user exists, then continue to validate if provided credentials match with the ones in db.
+  //Step5 -> If credentials match, then generate 2 tokens, one is Access token and other is Refresh Token.
+  //Step6 -> refresh token is stored in db while access token is sent through cookies to the client
+  //Step7 -> Return response object with user details.
+
+  const { username, email, password } = req.body;
+
+  if ((!username || username === "") && (!email || email === "")) {
+    throw new ApiError(400, "Username or Email is required.");
+  }
+
+  if (!password || password === "") {
+    throw new ApiError(400, "Password is required.");
+  }
+
+  const user = await User.findOne({
+    $or: [{ username }, { email }]
+  });
+
+  if (!user) {
+    throw new ApiError(404, "User not found.");
+  }
+
+
+  const isPasswordValid = await user.isPasswordValid(password);
+
+  if (!isPasswordValid) {
+    throw new ApiError(401, "Invalid password.");
+  }
+
+  const { accessToken, refreshToken } = await generateAccessAndRefreshToken(user);
+
+  const loggedInUser = await User.findById(user._id).select("-password -refreshToken");
+
+  const options = {
+    httpOnly: true,
+    secure: true,
+    maxAge: 86400000,
+  }
+
+  return res.status(200)
+    .cookie('accessToken', accessToken, options)
+    .cookie('refreshToken', refreshToken, options)
+    .json(
+      new ApiResponse(
+        200,
+        {
+          user: loggedInUser, accessToken, refreshToken // We are sending these again despite of already setting hem in cookies, bcz maybe if a mobile app user is trying to login, in that case we cannot set cookies. So we send tokens to client so that they can securely store them
+        },
+        "Logged in Successfully."
+      )
+    )
+
+
+});
+
+const logoutUser = asyncHandler(async (req: ExtendedRequest, res: Response) => {
+  const userId = req.user._id;
+
+  if (!userId) {
+    throw new ApiError(400, "User Id is required.")
+  }
+
+  try {
+    const user = await User.findByIdAndUpdate(userId, {
+      $set: {
+        refreshToken: undefined
+      }
+    }, { new: true }); // Setting new to true will return user doc with updated fields.
+
+    if (!user) {
+      throw new ApiError(404, "User not found.");
+    }
+  } catch (error) {
+    throw new ApiError(500, "Failed to fetch User");
+  }
+
+  const options = {
+    httpOnly: true,
+    secure: true,
+  }
+
+  return res.status(200)
+    .cookie('accessToken', options)
+    .cookie('refreshToken', options)
+    .json(new ApiResponse(
+      200,
+      null,
+      "User Logged out Successfully",
+    ))
+
+})
+
+export { registerHandler, loginUser, logoutUser };
+
