@@ -2,6 +2,7 @@ import { Router } from "express";
 import {
   loginUser,
   logoutUser,
+  refreshAccessToken,
   registerHandler,
 } from "../controllers/user.controller";
 import { upload } from "../middlewares/multer.middleware";
@@ -17,8 +18,9 @@ router.route("/register").post(
   registerHandler
 );
 router.route("/login").post(loginUser);
+router.route("/refresh-token").post(refreshAccessToken);
 
 // Secured Routes -> Meaning that these routes require verification before they can be reached.
-router.route("/logout").get(verifyJWT, logoutUser);
+router.route("/logout").post(verifyJWT, logoutUser);
 
 export default router;

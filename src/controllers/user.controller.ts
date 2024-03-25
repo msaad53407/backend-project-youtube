@@ -5,8 +5,15 @@ import { User } from "../models/user.model";
 import { MulterFiles } from "../middlewares/multer.middleware";
 import { uploadFile } from "../lib/cloudinary";
 import ApiResponse from "../utils/ApiResponse";
+import jwt from "jsonwebtoken";
 import { UserDocument } from "../interfaces/mongoose.gen";
 import { ExtendedRequest } from "../middlewares/auth.middleware";
+
+const options = {
+  httpOnly: true,
+  secure: true,
+  maxAge: 86400 * 1000 * 1,
+};
 
 const registerHandler = asyncHandler(async (req: Request, res: Response) => {
   // Step 1: Get details from the body of the request.
@@ -153,16 +160,13 @@ const loginUser = asyncHandler(async (req: Request, res: Response) => {
     "-password -refreshToken"
   );
 
-  const options = {
-    httpOnly: true,
-    secure: true,
-    maxAge: 86400000,
-  };
-
   return res
     .status(200)
     .cookie("accessToken", accessToken, options)
-    .cookie("refreshToken", refreshToken, options)
+    .cookie("refreshToken", refreshToken, {
+      ...options,
+      maxAge: 86400 * 1000 * 10, // Setting maxAge to 10 days.
+    })
     .json(
       new ApiResponse(
         200,
@@ -201,16 +205,58 @@ const logoutUser = asyncHandler(async (req: ExtendedRequest, res: Response) => {
     throw new ApiError(500, "Failed to fetch User");
   }
 
-  const options = {
-    httpOnly: true,
-    secure: true,
-  };
-
   return res
     .status(200)
-    .cookie("accessToken", options)
-    .cookie("refreshToken", options)
+    .clearCookie("accessToken")
+    .clearCookie("refreshToken")
     .json(new ApiResponse(200, null, "User Logged out Successfully"));
 });
 
-export { registerHandler, loginUser, logoutUser };
+const refreshAccessToken = asyncHandler(async (req: Request, res: Response) => {
+  const refreshTokenFromUser =
+    req.cookies?.refreshToken || req.body?.refreshToken;
+
+  if (!refreshTokenFromUser) {
+    throw new ApiError(400, "Unauthorized Request.");
+  }
+
+  try {
+    const decodedRefreshToken: any = jwt.verify(
+      refreshTokenFromUser,
+      process.env.REFRESH_TOKEN_SECRET as string
+    );
+
+    const user = await User.findById(decodedRefreshToken?._id);
+
+    if (!user || user?.refreshToken !== refreshTokenFromUser) {
+      throw new ApiError(401, "Invalid Refresh Token.");
+    }
+
+    const { accessToken, refreshToken } =
+      await generateAccessAndRefreshToken(user);
+
+    return res
+      .status(200)
+      .cookie("accessToken", accessToken, options)
+      .cookie("refreshToken", refreshToken, {
+        ...options,
+        maxAge: 86400 * 1000 * 10, //Set max age to 10 days
+      })
+      .json(
+        new ApiResponse(
+          200,
+          {
+            accessToken,
+            refreshToken,
+          },
+          "Access Token Refreshed Successfully"
+        )
+      );
+  } catch (error) {
+    const errorMessage =
+      error instanceof Error ? error.message : "Invalid RefreshToken";
+    throw new ApiError(500, errorMessage);
+  }
+});
+
+export { registerHandler, loginUser, logoutUser, refreshAccessToken };
