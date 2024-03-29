@@ -8,6 +8,107 @@
 import mongoose from "mongoose";
 
 /**
+ * Lean version of SubscriptionDocument
+ *
+ * This has all Mongoose getters & functions removed. This type will be returned from `SubscriptionDocument.toObject()`. To avoid conflicts with model names, use the type alias `SubscriptionObject`.
+ * ```
+ * const subscriptionObject = subscription.toObject();
+ * ```
+ */
+export type Subscription = {
+  subscriber: User["_id"] | User;
+  channel: User["_id"] | User;
+  _id: mongoose.Types.ObjectId;
+  createdAt?: Date;
+  updatedAt?: Date;
+};
+
+/**
+ * Lean version of SubscriptionDocument (type alias of `Subscription`)
+ *
+ * Use this type alias to avoid conflicts with model names:
+ * ```
+ * import { Subscription } from "../models"
+ * import { SubscriptionObject } from "../interfaces/mongoose.gen.ts"
+ *
+ * const subscriptionObject: SubscriptionObject = subscription.toObject();
+ * ```
+ */
+export type SubscriptionObject = Subscription;
+
+/**
+ * Mongoose Query type
+ *
+ * This type is returned from query functions. For most use cases, you should not need to use this type explicitly.
+ */
+export type SubscriptionQuery = mongoose.Query<
+  any,
+  SubscriptionDocument,
+  SubscriptionQueries
+> &
+  SubscriptionQueries;
+
+/**
+ * Mongoose Query helper types
+ *
+ * This type represents `SubscriptionSchema.query`. For most use cases, you should not need to use this type explicitly.
+ */
+export type SubscriptionQueries = {};
+
+export type SubscriptionMethods = {};
+
+export type SubscriptionStatics = {};
+
+/**
+ * Mongoose Model type
+ *
+ * Pass this type to the Mongoose Model constructor:
+ * ```
+ * const Subscription = mongoose.model<SubscriptionDocument, SubscriptionModel>("Subscription", SubscriptionSchema);
+ * ```
+ */
+export type SubscriptionModel = mongoose.Model<
+  SubscriptionDocument,
+  SubscriptionQueries
+> &
+  SubscriptionStatics;
+
+/**
+ * Mongoose Schema type
+ *
+ * Assign this type to new Subscription schema instances:
+ * ```
+ * const SubscriptionSchema: SubscriptionSchema = new mongoose.Schema({ ... })
+ * ```
+ */
+export type SubscriptionSchema = mongoose.Schema<
+  SubscriptionDocument,
+  SubscriptionModel,
+  SubscriptionMethods,
+  SubscriptionQueries
+>;
+
+/**
+ * Mongoose Document type
+ *
+ * Pass this type to the Mongoose Model constructor:
+ * ```
+ * const Subscription = mongoose.model<SubscriptionDocument, SubscriptionModel>("Subscription", SubscriptionSchema);
+ * ```
+ */
+export type SubscriptionDocument = mongoose.Document<
+  mongoose.Types.ObjectId,
+  SubscriptionQueries
+> &
+  SubscriptionMethods & {
+    subscriber: UserDocument["_id"] | UserDocument;
+    channel: UserDocument["_id"] | UserDocument;
+    _id: mongoose.Types.ObjectId;
+    createdAt?: Date;
+    updatedAt?: Date;
+  };
+
+/**
  * Lean version of UserDocument
  *
  * This has all Mongoose getters & functions removed. This type will be returned from `UserDocument.toObject()`. To avoid conflicts with model names, use the type alias `UserObject`.
