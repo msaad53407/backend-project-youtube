@@ -259,4 +259,169 @@ const refreshAccessToken = asyncHandler(async (req: Request, res: Response) => {
   }
 });
 
-export { registerHandler, loginUser, logoutUser, refreshAccessToken };
+const changeCurrentPassword = asyncHandler(
+  async (req: ExtendedRequest, res: Response) => {
+    const { oldPassword, newPassword } = req.body;
+
+    if (
+      (!oldPassword || oldPassword === "") &&
+      (!newPassword || newPassword === "")
+    ) {
+      throw new ApiError(400, "Old Password and New Password are required.");
+    }
+
+    const userId = req.user._id;
+
+    if (!userId) {
+      throw new ApiError(400, "User Id is required.");
+    }
+
+    try {
+      const user = await User.findById(userId);
+
+      const isPasswordValid = await user?.isPasswordValid(oldPassword);
+
+      if (!isPasswordValid) {
+        throw new ApiError(400, "Password is incorrect.");
+      }
+
+      user?.set("password", newPassword);
+
+      await user?.save({ validateBeforeSave: false });
+
+      return res
+        .status(200)
+        .json(new ApiResponse(200, null, "Password Changed Successfully."));
+    } catch (error) {
+      return new ApiError(500, "Failed to fetch User.");
+    }
+  }
+);
+
+const getCurrentUser = asyncHandler(
+  async (req: ExtendedRequest, res: Response) => {
+    const user = req.user;
+
+    if (!user) {
+      throw new ApiError(400, "User Id is required.");
+    }
+
+    return res
+      .status(200)
+      .json(new ApiResponse(200, user, "User fetched successfully."));
+  }
+);
+
+const updateAccountDetails = asyncHandler(
+  async (req: ExtendedRequest, res: Response) => {
+    const { fullName, email } = req.body;
+
+    if ((!fullName || fullName === "") && (!email || email === "")) {
+      throw new ApiError(400, "Full Name and Email are required.");
+    }
+
+    const userId = req.user._id;
+
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      {
+        $set: { fullName, email },
+      },
+      { new: true }
+    ).select("-password"); // -password means that password will not be returned in the updatedUser object.
+
+    if (!updatedUser) {
+      throw new ApiError(404, "User not found.");
+    }
+
+    return res
+      .status(200)
+      .json(
+        new ApiResponse(
+          200,
+          updatedUser,
+          "Account Details Updated Successfully."
+        )
+      );
+  }
+);
+
+const updateUserCoverImage = asyncHandler(
+  async (req: ExtendedRequest, res: Response) => {
+    const userId = req.user._id;
+
+    let coverImageLocalPath: string | null = null;
+
+    if (req.files && "coverImage" in req.files) {
+      coverImageLocalPath =
+        (req.files as MulterFiles).coverImage[0]?.path || null;
+    }
+    const coverImageUrl = coverImageLocalPath
+      ? await uploadFile(coverImageLocalPath)
+      : null;
+
+    if (!coverImageUrl) {
+      throw new ApiError(400, "Avatar is required.");
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      {
+        $set: { coverImage: coverImageUrl },
+      },
+      { new: true }
+    ).select("-password"); // -password means that password will not be returned in the updatedUser object.
+
+    if (!updatedUser) {
+      throw new ApiError(404, "User not found.");
+    }
+
+    return res
+      .status(200)
+      .json(
+        new ApiResponse(200, updatedUser, "Cover Image Updated Successfully.")
+      );
+  }
+);
+
+const updateUserAvatar = asyncHandler(
+  async (req: ExtendedRequest, res: Response) => {
+    const userId = req.user._id;
+
+    const avatarLocalPath = (req.files as MulterFiles)?.avatar[0]?.path;
+
+    if (!avatarLocalPath) {
+      throw new ApiError(400, "Avatar is required.");
+    }
+
+    const avatarUrl = await uploadFile(avatarLocalPath);
+
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      {
+        $set: { avatar: avatarUrl },
+      },
+      { new: true }
+    ).select("-password"); // -password means that password will not be returned in the updatedUser object.
+
+    if (!updatedUser) {
+      throw new ApiError(404, "User not found.");
+    }
+
+    return res
+      .status(200)
+      .json(new ApiResponse(200, updatedUser, "Avatar Updated Successfully."));
+  }
+);
+
+export {
+  registerHandler,
+  loginUser,
+  logoutUser,
+  refreshAccessToken,
+  changeCurrentPassword,
+  getCurrentUser,
+  updateAccountDetails,
+  updateUserAvatar,
+  updateUserCoverImage,
+};

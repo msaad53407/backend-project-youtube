@@ -1,5 +1,6 @@
 import { v2 as cloudinary } from "cloudinary";
 import fs from "fs";
+import ApiError from "../utils/ApiError";
 
 cloudinary.config({
   //TODO: change this to env variables
@@ -19,10 +20,11 @@ export const uploadFile = async (filePath: string) => {
     fs.unlinkSync(filePath);
     return response.secure_url;
   } catch (error) {
-    console.error("Error uploading file to Cloudinary !!!", error);
     try {
       fs.unlinkSync(filePath);
-    } catch (_) {}
-    return null;
+    } catch (_) {
+      return;
+    }
+    throw new ApiError(500, "Error uploading file to Cloudinary !!! " + error);
   }
 };
