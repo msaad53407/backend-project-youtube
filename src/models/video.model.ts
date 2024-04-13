@@ -57,7 +57,7 @@ const videoSchema: VideoSchema = new mongoose.Schema(
 );
 
 //TODO look into this error later.
-// @ts-ignore
+
 videoSchema.plugin(mongooseAggregatePaginate);
 
 export const Video: VideoModel = mongoose.model<VideoDocument, VideoModel>(
