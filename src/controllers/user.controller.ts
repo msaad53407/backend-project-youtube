@@ -9,7 +9,6 @@ import jwt from "jsonwebtoken";
 import { UserDocument } from "../interfaces/mongoose.gen";
 import { ExtendedRequest } from "../middlewares/auth.middleware";
 import mongoose from "mongoose";
-import { Multer } from "multer";
 
 const options = {
   httpOnly: true,
