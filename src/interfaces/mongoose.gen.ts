@@ -8,6 +8,305 @@
 import mongoose from "mongoose";
 
 /**
+ * Lean version of CommentDocument
+ *
+ * This has all Mongoose getters & functions removed. This type will be returned from `CommentDocument.toObject()`. To avoid conflicts with model names, use the type alias `CommentObject`.
+ * ```
+ * const commentObject = comment.toObject();
+ * ```
+ */
+export type Comment = {
+  content: string;
+  video: Video["_id"] | Video;
+  owner: User["_id"] | User;
+  _id: mongoose.Types.ObjectId;
+  createdAt?: Date;
+  updatedAt?: Date;
+};
+
+/**
+ * Lean version of CommentDocument (type alias of `Comment`)
+ *
+ * Use this type alias to avoid conflicts with model names:
+ * ```
+ * import { Comment } from "../models"
+ * import { CommentObject } from "../interfaces/mongoose.gen.ts"
+ *
+ * const commentObject: CommentObject = comment.toObject();
+ * ```
+ */
+export type CommentObject = Comment;
+
+/**
+ * Mongoose Query type
+ *
+ * This type is returned from query functions. For most use cases, you should not need to use this type explicitly.
+ */
+export type CommentQuery = mongoose.Query<
+  any,
+  CommentDocument,
+  CommentQueries
+> &
+  CommentQueries;
+
+/**
+ * Mongoose Query helper types
+ *
+ * This type represents `CommentSchema.query`. For most use cases, you should not need to use this type explicitly.
+ */
+export type CommentQueries = {};
+
+export type CommentMethods = {};
+
+export type CommentStatics = {};
+
+/**
+ * Mongoose Model type
+ *
+ * Pass this type to the Mongoose Model constructor:
+ * ```
+ * const Comment = mongoose.model<CommentDocument, CommentModel>("Comment", CommentSchema);
+ * ```
+ */
+export type CommentModel = mongoose.Model<CommentDocument, CommentQueries> &
+  CommentStatics;
+
+/**
+ * Mongoose Schema type
+ *
+ * Assign this type to new Comment schema instances:
+ * ```
+ * const CommentSchema: CommentSchema = new mongoose.Schema({ ... })
+ * ```
+ */
+export type CommentSchema = mongoose.Schema<
+  CommentDocument,
+  CommentModel,
+  CommentMethods,
+  CommentQueries
+>;
+
+/**
+ * Mongoose Document type
+ *
+ * Pass this type to the Mongoose Model constructor:
+ * ```
+ * const Comment = mongoose.model<CommentDocument, CommentModel>("Comment", CommentSchema);
+ * ```
+ */
+export type CommentDocument = mongoose.Document<
+  mongoose.Types.ObjectId,
+  CommentQueries
+> &
+  CommentMethods & {
+    content: string;
+    video: VideoDocument["_id"] | VideoDocument;
+    owner: UserDocument["_id"] | UserDocument;
+    _id: mongoose.Types.ObjectId;
+    createdAt?: Date;
+    updatedAt?: Date;
+  };
+
+/**
+ * Lean version of LikeDocument
+ *
+ * This has all Mongoose getters & functions removed. This type will be returned from `LikeDocument.toObject()`. To avoid conflicts with model names, use the type alias `LikeObject`.
+ * ```
+ * const likeObject = like.toObject();
+ * ```
+ */
+export type Like = {
+  likedBy: User["_id"] | User;
+  video?: Video["_id"] | Video;
+  comment?: Comment["_id"] | Comment;
+  tweet?: Tweet["_id"] | Tweet;
+  _id: mongoose.Types.ObjectId;
+  createdAt?: Date;
+  updatedAt?: Date;
+};
+
+/**
+ * Lean version of LikeDocument (type alias of `Like`)
+ *
+ * Use this type alias to avoid conflicts with model names:
+ * ```
+ * import { Like } from "../models"
+ * import { LikeObject } from "../interfaces/mongoose.gen.ts"
+ *
+ * const likeObject: LikeObject = like.toObject();
+ * ```
+ */
+export type LikeObject = Like;
+
+/**
+ * Mongoose Query type
+ *
+ * This type is returned from query functions. For most use cases, you should not need to use this type explicitly.
+ */
+export type LikeQuery = mongoose.Query<any, LikeDocument, LikeQueries> &
+  LikeQueries;
+
+/**
+ * Mongoose Query helper types
+ *
+ * This type represents `LikeSchema.query`. For most use cases, you should not need to use this type explicitly.
+ */
+export type LikeQueries = {};
+
+export type LikeMethods = {};
+
+export type LikeStatics = {};
+
+/**
+ * Mongoose Model type
+ *
+ * Pass this type to the Mongoose Model constructor:
+ * ```
+ * const Like = mongoose.model<LikeDocument, LikeModel>("Like", LikeSchema);
+ * ```
+ */
+export type LikeModel = mongoose.Model<LikeDocument, LikeQueries> & LikeStatics;
+
+/**
+ * Mongoose Schema type
+ *
+ * Assign this type to new Like schema instances:
+ * ```
+ * const LikeSchema: LikeSchema = new mongoose.Schema({ ... })
+ * ```
+ */
+export type LikeSchema = mongoose.Schema<
+  LikeDocument,
+  LikeModel,
+  LikeMethods,
+  LikeQueries
+>;
+
+/**
+ * Mongoose Document type
+ *
+ * Pass this type to the Mongoose Model constructor:
+ * ```
+ * const Like = mongoose.model<LikeDocument, LikeModel>("Like", LikeSchema);
+ * ```
+ */
+export type LikeDocument = mongoose.Document<
+  mongoose.Types.ObjectId,
+  LikeQueries
+> &
+  LikeMethods & {
+    likedBy: UserDocument["_id"] | UserDocument;
+    video?: VideoDocument["_id"] | VideoDocument;
+    comment?: CommentDocument["_id"] | CommentDocument;
+    tweet?: TweetDocument["_id"] | TweetDocument;
+    _id: mongoose.Types.ObjectId;
+    createdAt?: Date;
+    updatedAt?: Date;
+  };
+
+/**
+ * Lean version of PlaylistDocument
+ *
+ * This has all Mongoose getters & functions removed. This type will be returned from `PlaylistDocument.toObject()`. To avoid conflicts with model names, use the type alias `PlaylistObject`.
+ * ```
+ * const playlistObject = playlist.toObject();
+ * ```
+ */
+export type Playlist = {
+  name: string;
+  description: string;
+  videos: (Video["_id"] | Video)[];
+  owner: User["_id"] | User;
+  _id: mongoose.Types.ObjectId;
+  createdAt?: Date;
+  updatedAt?: Date;
+};
+
+/**
+ * Lean version of PlaylistDocument (type alias of `Playlist`)
+ *
+ * Use this type alias to avoid conflicts with model names:
+ * ```
+ * import { Playlist } from "../models"
+ * import { PlaylistObject } from "../interfaces/mongoose.gen.ts"
+ *
+ * const playlistObject: PlaylistObject = playlist.toObject();
+ * ```
+ */
+export type PlaylistObject = Playlist;
+
+/**
+ * Mongoose Query type
+ *
+ * This type is returned from query functions. For most use cases, you should not need to use this type explicitly.
+ */
+export type PlaylistQuery = mongoose.Query<
+  any,
+  PlaylistDocument,
+  PlaylistQueries
+> &
+  PlaylistQueries;
+
+/**
+ * Mongoose Query helper types
+ *
+ * This type represents `PlaylistSchema.query`. For most use cases, you should not need to use this type explicitly.
+ */
+export type PlaylistQueries = {};
+
+export type PlaylistMethods = {};
+
+export type PlaylistStatics = {};
+
+/**
+ * Mongoose Model type
+ *
+ * Pass this type to the Mongoose Model constructor:
+ * ```
+ * const Playlist = mongoose.model<PlaylistDocument, PlaylistModel>("Playlist", PlaylistSchema);
+ * ```
+ */
+export type PlaylistModel = mongoose.Model<PlaylistDocument, PlaylistQueries> &
+  PlaylistStatics;
+
+/**
+ * Mongoose Schema type
+ *
+ * Assign this type to new Playlist schema instances:
+ * ```
+ * const PlaylistSchema: PlaylistSchema = new mongoose.Schema({ ... })
+ * ```
+ */
+export type PlaylistSchema = mongoose.Schema<
+  PlaylistDocument,
+  PlaylistModel,
+  PlaylistMethods,
+  PlaylistQueries
+>;
+
+/**
+ * Mongoose Document type
+ *
+ * Pass this type to the Mongoose Model constructor:
+ * ```
+ * const Playlist = mongoose.model<PlaylistDocument, PlaylistModel>("Playlist", PlaylistSchema);
+ * ```
+ */
+export type PlaylistDocument = mongoose.Document<
+  mongoose.Types.ObjectId,
+  PlaylistQueries
+> &
+  PlaylistMethods & {
+    name: string;
+    description: string;
+    videos: mongoose.Types.Array<VideoDocument["_id"] | VideoDocument>;
+    owner: UserDocument["_id"] | UserDocument;
+    _id: mongoose.Types.ObjectId;
+    createdAt?: Date;
+    updatedAt?: Date;
+  };
+
+/**
  * Lean version of SubscriptionDocument
  *
  * This has all Mongoose getters & functions removed. This type will be returned from `SubscriptionDocument.toObject()`. To avoid conflicts with model names, use the type alias `SubscriptionObject`.
@@ -103,6 +402,100 @@ export type SubscriptionDocument = mongoose.Document<
   SubscriptionMethods & {
     subscriber: UserDocument["_id"] | UserDocument;
     channel: UserDocument["_id"] | UserDocument;
+    _id: mongoose.Types.ObjectId;
+    createdAt?: Date;
+    updatedAt?: Date;
+  };
+
+/**
+ * Lean version of TweetDocument
+ *
+ * This has all Mongoose getters & functions removed. This type will be returned from `TweetDocument.toObject()`. To avoid conflicts with model names, use the type alias `TweetObject`.
+ * ```
+ * const tweetObject = tweet.toObject();
+ * ```
+ */
+export type Tweet = {
+  content: string;
+  owner: User["_id"] | User;
+  _id: mongoose.Types.ObjectId;
+  createdAt?: Date;
+  updatedAt?: Date;
+};
+
+/**
+ * Lean version of TweetDocument (type alias of `Tweet`)
+ *
+ * Use this type alias to avoid conflicts with model names:
+ * ```
+ * import { Tweet } from "../models"
+ * import { TweetObject } from "../interfaces/mongoose.gen.ts"
+ *
+ * const tweetObject: TweetObject = tweet.toObject();
+ * ```
+ */
+export type TweetObject = Tweet;
+
+/**
+ * Mongoose Query type
+ *
+ * This type is returned from query functions. For most use cases, you should not need to use this type explicitly.
+ */
+export type TweetQuery = mongoose.Query<any, TweetDocument, TweetQueries> &
+  TweetQueries;
+
+/**
+ * Mongoose Query helper types
+ *
+ * This type represents `TweetSchema.query`. For most use cases, you should not need to use this type explicitly.
+ */
+export type TweetQueries = {};
+
+export type TweetMethods = {};
+
+export type TweetStatics = {};
+
+/**
+ * Mongoose Model type
+ *
+ * Pass this type to the Mongoose Model constructor:
+ * ```
+ * const Tweet = mongoose.model<TweetDocument, TweetModel>("Tweet", TweetSchema);
+ * ```
+ */
+export type TweetModel = mongoose.Model<TweetDocument, TweetQueries> &
+  TweetStatics;
+
+/**
+ * Mongoose Schema type
+ *
+ * Assign this type to new Tweet schema instances:
+ * ```
+ * const TweetSchema: TweetSchema = new mongoose.Schema({ ... })
+ * ```
+ */
+export type TweetSchema = mongoose.Schema<
+  TweetDocument,
+  TweetModel,
+  TweetMethods,
+  TweetQueries
+>;
+
+/**
+ * Mongoose Document type
+ *
+ * Pass this type to the Mongoose Model constructor:
+ * ```
+ * const Tweet = mongoose.model<TweetDocument, TweetModel>("Tweet", TweetSchema);
+ * ```
+ */
+export type TweetDocument = mongoose.Document<
+  mongoose.Types.ObjectId,
+  TweetQueries
+> &
+  TweetMethods & {
+    content: string;
+    owner: UserDocument["_id"] | UserDocument;
     _id: mongoose.Types.ObjectId;
     createdAt?: Date;
     updatedAt?: Date;
