@@ -9,6 +9,7 @@ import jwt from "jsonwebtoken";
 import { UserDocument } from "../interfaces/mongoose.gen";
 import { ExtendedRequest } from "../middlewares/auth.middleware";
 import mongoose from "mongoose";
+import { Multer } from "multer";
 
 const options = {
   httpOnly: true,
@@ -263,7 +264,6 @@ const refreshAccessToken = asyncHandler(async (req: Request, res: Response) => {
 const changeCurrentPassword = asyncHandler(
   async (req: ExtendedRequest, res: Response) => {
     const { oldPassword, newPassword } = req.body;
-
     if (
       (!oldPassword || oldPassword === "") &&
       (!newPassword || newPassword === "")
@@ -281,8 +281,8 @@ const changeCurrentPassword = asyncHandler(
       const user = await User.findById(userId);
 
       const isPasswordValid = await user?.isPasswordValid(oldPassword);
-
       if (!isPasswordValid) {
+        //TODO Check as to why this Api error is not being thrown
         throw new ApiError(400, "Password is incorrect.");
       }
 
@@ -298,6 +298,8 @@ const changeCurrentPassword = asyncHandler(
     }
   }
 );
+
+// TODO Add a forgot password controller for a future forgot password functionality.
 
 const getCurrentUser = asyncHandler(
   async (req: ExtendedRequest, res: Response) => {
@@ -317,7 +319,7 @@ const updateAccountDetails = asyncHandler(
   async (req: ExtendedRequest, res: Response) => {
     const { fullName, email } = req.body;
 
-    if ((!fullName || fullName === "") && (!email || email === "")) {
+    if ([fullName, email].some(field => field === undefined || field === "")) {
       throw new ApiError(400, "Full Name and Email are required.");
     }
 
@@ -351,18 +353,16 @@ const updateUserCoverImage = asyncHandler(
   async (req: ExtendedRequest, res: Response) => {
     const userId = req.user._id;
 
-    let coverImageLocalPath: string | null = null;
+    const coverImageLocalPath = req?.file?.path || null;
 
-    if (req.files && "coverImage" in req.files) {
-      coverImageLocalPath =
-        (req.files as MulterFiles).coverImage[0]?.path || null;
+    if (!coverImageLocalPath) {
+      throw new ApiError(400, "Cover Image is required.");
     }
-    const coverImageUrl = coverImageLocalPath
-      ? await uploadFile(coverImageLocalPath)
-      : null;
+
+    const coverImageUrl = await uploadFile(coverImageLocalPath);
 
     if (!coverImageUrl) {
-      throw new ApiError(400, "Avatar is required.");
+      throw new ApiError(401, "Failed to update Cover Image.");
     }
 
     const updatedUser = await User.findByIdAndUpdate(
@@ -389,13 +389,17 @@ const updateUserAvatar = asyncHandler(
   async (req: ExtendedRequest, res: Response) => {
     const userId = req.user._id;
 
-    const avatarLocalPath = (req.files as MulterFiles)?.avatar[0]?.path;
+    const avatarLocalPath = req.file?.path || null;
 
     if (!avatarLocalPath) {
       throw new ApiError(400, "Avatar is required.");
     }
 
     const avatarUrl = await uploadFile(avatarLocalPath);
+
+    if (!avatarUrl) {
+      throw new ApiError(401, "Failed to update avatar.");
+    }
 
     const updatedUser = await User.findByIdAndUpdate(
       userId,
@@ -468,7 +472,7 @@ const getUserChannelProfile = asyncHandler(
             coverImage: 1,
             subscribersCount: 1,
             subscribedToCount: 1,
-            isSubscribed: 1,
+            isSubscribed: 1, // TODO Research about a way to add a conditional statement here So that the isSubscribed field gets projected only if username !== req.user.username
             username: 1,
             email: 1,
           },
@@ -478,7 +482,6 @@ const getUserChannelProfile = asyncHandler(
       if (!channel || channel.length === 0) {
         throw new ApiError(404, "Channel not found.");
       }
-
       return res
         .status(200)
         .json(
