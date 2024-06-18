@@ -13,7 +13,7 @@ import { NextFunction, Response, Request } from "express";
 // }
 
 //& Wrapper to handle async errors using Promises
-export const asyncHandler = (handlerFn: Function) => {
+export const asyncHandler = (handlerFn: (req: any, res: any, next: any) => void) => {
     return (req: Request, res: Response, next: NextFunction) => {
         Promise.resolve(handlerFn(req, res, next)).catch((error: any) => next(error));
     }

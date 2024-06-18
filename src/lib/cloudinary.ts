@@ -23,7 +23,7 @@ export const uploadFile = async (filePath: string) => {
     try {
       fs.unlinkSync(filePath);
     } catch (_) {
-      return;
+      return null;
     }
     throw new ApiError(500, "Error uploading file to Cloudinary !!! " + error);
   }
