@@ -26,20 +26,12 @@ const toggleSubscription = asyncHandler(
     }
 
     try {
-      const userSubscription = await Subscription.findOne({
+      const userSubscription = await Subscription.findOneAndDelete({
         channel: channelId,
         subscriber: userId,
       });
 
       if (userSubscription) {
-        const deletedSubscription = await Subscription.findByIdAndDelete(
-          userSubscription._id
-        );
-
-        if (!deletedSubscription) {
-          throw new ApiError(502, "Could not unsubscribe");
-        }
-
         return res
           .status(200)
           .json(new ApiResponse(200, null, "Unsubscribed Successfully"));
