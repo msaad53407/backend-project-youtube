@@ -1,25 +1,34 @@
 import mongoose from "mongoose";
-import { PlaylistDocument, PlaylistModel, PlaylistSchema } from "../interfaces/mongoose.gen";
+import {
+  PlaylistDocument,
+  PlaylistModel,
+  PlaylistSchema,
+} from "../interfaces/mongoose.gen";
 
-const playlistSchema: PlaylistSchema = new mongoose.Schema({
+const playlistSchema: PlaylistSchema = new mongoose.Schema(
+  {
     name: {
-        type: String,
-        required: true
+      type: String,
+      required: true,
     },
     description: {
-        type: String,
-        required: true
+      type: String,
+      required: true,
     },
     videos: {
-        type: [mongoose.SchemaTypes.ObjectId],
-        ref: "Video",
-        required: true
+      type: [mongoose.SchemaTypes.ObjectId],
+      ref: "Video",
     },
     owner: {
-        type: mongoose.SchemaTypes.ObjectId,
-        ref: "User",
-        required: true
-    }
-}, { timestamps: true });
+      type: mongoose.SchemaTypes.ObjectId,
+      ref: "User",
+      required: true,
+    },
+  },
+  { timestamps: true }
+);
 
-export const Playlist: PlaylistModel = mongoose.model<PlaylistDocument, PlaylistModel>("Playlist", playlistSchema);
+export const Playlist: PlaylistModel = mongoose.model<
+  PlaylistDocument,
+  PlaylistModel
+>("Playlist", playlistSchema);
