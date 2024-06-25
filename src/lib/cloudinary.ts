@@ -18,7 +18,7 @@ export const uploadFile = async (filePath: string) => {
       folder: "streamNow",
     });
     fs.unlinkSync(filePath);
-    return response.secure_url;
+    return response;
   } catch (error) {
     try {
       fs.unlinkSync(filePath);
