@@ -64,13 +64,13 @@ const registerHandler = asyncHandler(async (req: Request, res: Response) => {
   }
 
   //Step5
-  const avatarUrl = await uploadFile(avatarLocalPath);
-  const coverImageUrl = coverImageLocalPath
+  const avatar = await uploadFile(avatarLocalPath);
+  const coverImage = coverImageLocalPath
     ? await uploadFile(coverImageLocalPath)
     : null;
 
   //Step6
-  if (!avatarUrl) {
+  if (!avatar?.secure_url) {
     throw new ApiError(500, "Error uploading avatar.");
   }
 
@@ -81,8 +81,8 @@ const registerHandler = asyncHandler(async (req: Request, res: Response) => {
     username: username.toLowerCase(),
     email,
     password,
-    avatar: avatarUrl,
-    coverImage: coverImageUrl || null,
+    avatar: avatar?.secure_url,
+    coverImage: coverImage?.secure_url || null,
   });
 
   // We are querying the newly created user from the db to ensure that User is created. Futhermore, we are removing password and refreshToken fields from the response object by specifying which fields to remove in the select option.
@@ -318,7 +318,9 @@ const updateAccountDetails = asyncHandler(
   async (req: ExtendedRequest, res: Response) => {
     const { fullName, email } = req.body;
 
-    if ([fullName, email].some(field => field === undefined || field === "")) {
+    if (
+      [fullName, email].some((field) => field === undefined || field === "")
+    ) {
       throw new ApiError(400, "Full Name and Email are required.");
     }
 
