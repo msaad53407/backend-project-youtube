@@ -2,6 +2,9 @@ import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import { jsonLimit } from "./constants";
+import dotenv from "dotenv";
+
+dotenv.config({ path: "./.env.local" });
 
 export const app = express();
 
@@ -45,4 +48,3 @@ app.use("/api/v1/playlists", playlistRouter);
 app.use("/api/v1/subscriptions", subscriptionRouter);
 app.use("/api/v1/dashboard", dashboardRouter);
 app.use("/api/v1/healthcheck", healthCheck);
-
