@@ -121,4 +121,5 @@ dist
 
 .idea
 
+nodesource_setup.sh
 # End of https://mrkandreev.name/snippets/gitignore-generator/#Node

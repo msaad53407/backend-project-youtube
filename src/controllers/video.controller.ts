@@ -3,11 +3,12 @@ import { Video } from "../models/video.model";
 import ApiError from "../utils/ApiError";
 import ApiResponse from "../utils/ApiResponse";
 import { asyncHandler } from "../utils/asyncHandler";
-import { uploadFile } from "../lib/cloudinary";
+import { deleteFile, uploadFile } from "../lib/cloudinary";
 import { Request, Response } from "express";
 import { ExtendedRequest } from "../middlewares/auth.middleware";
 import { MulterFiles } from "../middlewares/multer.middleware";
 import { UploadApiResponse } from "cloudinary";
+import { extractPublicID } from "../utils";
 
 const getAllVideos = asyncHandler(async (req: Request, res: Response) => {
   const { page = 1, limit = 10, query, sortBy, sortType } = req.query;
@@ -228,6 +229,9 @@ const deleteVideo = asyncHandler(
       if (!video) {
         throw new ApiError(400, "Video not found");
       }
+
+      await deleteFile(extractPublicID(video.videoFile), "video");
+      await deleteFile(extractPublicID(video.thumbnail), "image");
 
       return res
         .status(200)
