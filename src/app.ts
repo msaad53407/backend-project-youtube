@@ -26,6 +26,11 @@ app.use(express.static("public"));
 
 app.use(cookieParser());
 
+app.use((req, res, next) => {
+  console.log(`Received ${req.method} request to ${req.path}`);
+  next();
+});
+
 // Importing Routes
 import userRouter from "./routes/user.routes";
 import videoRouter from "./routes/video.routes";
